@@ -1,0 +1,2503 @@
+# 1) EXTRACTING 5 CHARACTERISTICS FROM CHROMOSOMES FOR AGREEABLENESS 
+
+echo 'Chr Pos Ref Alt Es Lp' | tr ' ' '\t' > ieu-a-115.pos.txt 
+
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%ES\t%LP]\n' ieu-a-115.vcf.gz >> ieu-a-115.pos.txt 
+
+2) MOD CLUSTERING  
+
+clearvars 
+
+a = readtable("arch.period.txt", 'TextType','string', 'Delimiter', '\t','ReadVariableNames' ,true, 'VariableNamingRule','preserve'); 
+
+v54 = readtable("v54.anno.dupl.txt", 'TextType','string', 'Delimiter', '\t','ReadVariableNames' ,true, 'VariableNamingRule','preserve'); 
+
+[~,memb] = ismember(a.InstanceID,v54.InstanceID); 
+
+v54 = v54(memb,:); 
+
+pa = readtable("v54.PCA.txt", 'TextType','string', 'Delimiter', '\t', ReadVariableNames=true); 
+
+  
+
+is0 = find(~isnan(v54.Long) & v54.Long < 60); 
+
+is1 = find(a.Mod==1 & ~isnan(v54.Long) & v54.Long < 60); 
+
+  
+
+unique(v54.Country(is1)); 
+
+[country, ~, id] = unique(v54.Country(is1));    %list of countries 
+
+  
+
+c = v54.Country(is1); 
+
+  
+
+r = find(ismember(c, 'Russia')); 
+
+ru = find(pa.PC2(is1(r)) <0.02 & pa.PC3(is1(r)) < -0.01); 
+
+russia_id = v54.InstanceID(is1(r(ru)));    
+
+writematrix(russia_id, 'ru_south_Mod.txt'); 
+
+  
+
+  
+
+i = find(ismember(c, 'Italy')); 
+
+%i1 = find(pa.PC2(is1(i))> -0.02); 
+
+%italy1_id = v54.InstanceID(is1(i(i1)));   
+
+%writematrix(italy1_id, 'italy_1_Mod.txt'); 
+
+i2 = find(pa.PC2(is1(i))<= -0.02); 
+
+italy2_id = v54.InstanceID(is1(i(i2)));   
+
+writematrix(italy2_id, 'italy_Mod.txt'); 
+
+  
+
+  
+
+%es = find(ismember(c,{'Georgia', 'Abkhazia', 'Iran', 'Armenia'})); 
+
+%es_id = v54.InstanceID(is1(es)); 
+
+%writematrix(es_id, 'east_south_Mod.txt'); 
+
+  
+
+%n = find(ismember(c,{'Finland', 'Estonia', 'Russia', 'Iceland'})); 
+
+%n1 = find(pa.PC2(is1(n)) >=0.02); 
+
+%north_id = v54.InstanceID(is1(n(n1))); 
+
+%writematrix(north_id, 'north_Mod.txt'); 
+
+  
+
+ce = find(ismember(c,{'Finland', 'Estonia', 'Russia', 'Iceland','Czech Republic','Poland','United Kingdom', 'Hungary', 'Bulgaria','Spain', 'France', 'Greece', 'Albania', 'Italy'})); 
+
+ce1 = find(pa.PC2(is1(ce)) > 0 & pa.PC3(is1(ce)) > -0.01); 
+
+central_id = v54.InstanceID(is1(ce(ce1))); 
+
+writematrix(central_id, 'central_Mod.txt'); 
+
+  
+
+s = find(ismember(c,{'Bulgaria','Spain', 'France', 'Greece', 'Albania', 'Italy'})); 
+
+%s1 = find(pa.PC3(is1(s))> -0.01 & pa.PC2(is1(s))> 0); 
+
+%south1_id = v54.InstanceID(is1(s(s1))); 
+
+%writematrix(south1_id, 'south_1_Mod.txt'); 
+
+s2 = find( pa.PC2(is1(s)) > -0.02 & pa.PC2(is1(s))<=0 ); 
+
+south2_id = v54.InstanceID(is1(s(s2))); 
+
+writematrix(south2_id, 'south_Mod.txt'); 
+
+  
+
+e = find(ismember(c,{'Israel', 'Jordan', 'Iraq', 'Abkhazia', 'Armenia', 'Georgia', 'Iran', 'Jordan', 'Turkey'})); 
+
+east_id = v54.InstanceID(is1(e)); 
+
+writematrix(east_id, 'east_Mod.txt'); 
+
+  
+
+  
+
+figure(1); 
+
+  
+
+hold on 
+
+plot(pa.PC1(is0),pa.PC2(is0),'go', 'MarkerSize',3); 
+
+h1 = plot(pa.PC1(is1),pa.PC2(is1),'ko','MarkerSize',3 ); 
+
+text(pa.PC1(is1),pa.PC2(is1),country(id), 'Color', [1 0 1], 'FontSize', 8); 
+
+  
+
+h1.DataTipTemplate.DataTipRows(1) = dataTipTextRow('Group',v54.InstanceID(is1)); 
+
+h1.DataTipTemplate.DataTipRows(2) = dataTipTextRow('Group',v54.GroupID(is1)); 
+
+h1.DataTipTemplate.DataTipRows(3) = dataTipTextRow('Average date',v54.AverageDate(is1)); 
+
+h1.DataTipTemplate.Interpreter = 'none'; 
+
+  
+
+hold off 
+
+  
+
+figure(2); 
+
+hold on 
+
+plot(pa.PC2(is1),pa.PC3(is1),'go', 'MarkerSize',3); 
+
+%h2 = plot(pa.PC2(is1(i(i1))),pa.PC3(is1(i(i1))),'ko','MarkerSize',3); 
+
+%text(pa.PC2(is1(i(i1))),pa.PC3(is1(i(i1))),country(id(i(i1))), 'Color', [1 0 1], 'FontSize', 8); 
+
+  
+
+h3 = plot(pa.PC2(is1(r(ru))),pa.PC3(is1(r(ru))),'ko','MarkerSize',3); 
+
+text(pa.PC2(is1(r(ru))),pa.PC3(is1(r(ru))),country(id(r(ru))), 'Color', [0.4660 0.6740 0.1880], 'FontSize', 8); 
+
+  
+
+h4 = plot(pa.PC2(is1(i(i2))),pa.PC3(is1(i(i2))),'ko','MarkerSize',3); 
+
+text(pa.PC2(is1(i(i2))),pa.PC3(is1(i(i2))),country(id(i(i2))), 'Color', [0 0 0], 'FontSize', 8); 
+
+  
+
+%h5 = plot(pa.PC2(is1(es)),pa.PC3(is1(es)),'yo','MarkerSize',3); 
+
+%text(pa.PC2(is1(es)),pa.PC3(is1(es)),country(id(es)), 'Color', [1 1 0], 'FontSize', 8); 
+
+  
+
+%h6 = plot(pa.PC2(is1(n(n1))),pa.PC3(is1(n(n1))),'ko','MarkerSize',3); 
+
+%text(pa.PC2(is1(n(n1))),pa.PC3(is1(n(n1))),country(id(n(n1))), 'Color', [0.4940 0.1840 0.5560], 'FontSize', 8); 
+
+  
+
+h7 = plot(pa.PC2(is1(ce(ce1))),pa.PC3(is1(ce(ce1))),'ro','MarkerSize',3); 
+
+text(pa.PC2(is1(ce(ce1))),pa.PC3(is1(ce(ce1))),country(id(ce(ce1))), 'Color', [1 0 0], 'FontSize', 8); 
+
+  
+
+%h8 = plot(pa.PC2(is1(s(s1))),pa.PC3(is1(s(s1))),'bo','MarkerSize',3); 
+
+%text(pa.PC2(is1(s(s1))),pa.PC3(is1(s(s1))),country(id(s(s1))), 'Color', [0 0 1], 'FontSize', 8); 
+
+  
+
+h9 = plot(pa.PC2(is1(s(s2))),pa.PC3(is1(s(s2))),'yo','MarkerSize',3); 
+
+text(pa.PC2(is1(s(s2))),pa.PC3(is1(s(s2))),country(id(s(s2))), 'Color', [1 1 0], 'FontSize', 8); 
+
+  
+
+h10 = plot(pa.PC2(is1(e)),pa.PC3(is1(e)),'ko','MarkerSize',3); 
+
+text(pa.PC2(is1(e)),pa.PC3(is1(e)),country(id(e)), 'Color', [0.8500 0.3250 0.0980], 'FontSize', 8); 
+
+  
+
+  
+
+h2.DataTipTemplate.DataTipRows(1) = dataTipTextRow('Group',v54.InstanceID(is1)); 
+
+h2.DataTipTemplate.DataTipRows(2) = dataTipTextRow('Group',v54.GroupID(is1)); 
+
+h2.DataTipTemplate.DataTipRows(3) = dataTipTextRow('Average date',v54.AverageDate(is1)); 
+
+h2.DataTipTemplate.Interpreter = 'none'; 
+
+  
+
+hold off 
+
+legend('all', 'italy1', 'russia', 'italy2', 'eastsouth', 'north', 'central', 'south1', 'south2', 'east'); 
+
+2) HG CLUSTERING  
+
+  
+
+clearvars 
+
+a = readtable("arch.period.txt", 'TextType','string', 'Delimiter', '\t','ReadVariableNames' ,true, 'VariableNamingRule','preserve'); 
+
+v54 = readtable("v54.anno.dupl.txt", 'TextType','string', 'Delimiter', '\t','ReadVariableNames' ,true, 'VariableNamingRule','preserve'); 
+
+[~,memb] = ismember(a.InstanceID,v54.InstanceID); 
+
+v54 = v54(memb,:); 
+
+pa = readtable("v54.PCA.txt", 'TextType','string', 'Delimiter', '\t', ReadVariableNames=true); 
+
+  
+
+is0 = find(~isnan(v54.Long) & v54.Long < 60); 
+
+is1 = find(a.HG==1 & ~isnan(v54.Long) & v54.Long < 60); 
+
+  
+
+unique(v54.Country(is1)); 
+
+[country, ~, id] = unique(v54.Country(is1)); 
+
+  
+
+c = v54.Country(is1); 
+
+  
+
+%r = find(ismember(c, 'Russia')); 
+
+%russia_n = find(pa.PC2(is1(r)) > 0.06); 
+
+%russia_north = v54.InstanceID(is1(r(russia_n))); 
+
+%writematrix(russia_north, 'russia_north_HG.txt'); 
+
+  
+
+  
+
+n = find(ismember(c,{'Sweden', 'Norway', 'Ukraine', 'Latvia', 'Russia'})); 
+
+n1 = find(pa.PC2(is1(n)) > 0.04); 
+
+north_id = v54.InstanceID(is1(n(n1))); 
+
+writematrix(north_id, 'north_HG.txt'); 
+
+  
+
+w = find(ismember(c,{'Belgium','United Kingdom', 'Luxembourg','France', 'Montenegro', 'Switzerland', 'Ireland', 'Italy', 'Germany', 'Lithuania', 'Denamrk', 'Hungary', 'Serbia', 'Romania', 'Spain', 'Portugal'})); 
+
+w1 = find(pa.PC3(is1(w)) >= 0.06); 
+
+west_id = v54.InstanceID(is1(w(w1))); 
+
+writematrix(west_id, 'central_west_HG.txt'); 
+
+  
+
+%s = find(ismember(c,{'Spain', 'Portugal'})); 
+
+%south_id = v54.InstanceID(is1(s)); 
+
+%writematrix(south_id, 'south_HG.txt'); 
+
+  
+
+es = find(ismember(c,{ 'Georgia', 'Iran', 'Iraq', 'Isreal', 'Turkey', 'Bulgaria', 'Czech Republic', 'Czechia', 'Austria', 'Russia', 'Serbia', 'Germany', 'Belgium', 'Romania', 'France', 'Italy'})); 
+
+es1 = find( pa.PC2(is1(es)) <= 0.04 & pa.PC3(is1(es)) < 0.06); 
+
+es1_id = v54.InstanceID(is1(es(es1))); 
+
+writematrix(es1_id, 'east_south1_HG.txt'); 
+
+%es2 = find(pa.PC3(is1(es)) < 0); 
+
+%%es2_id = v54.InstanceID(is1(es(es2))); 
+
+%writematrix(es2_id, 'east_south2_HG.txt'); 
+
+  
+
+  
+
+%e = find(ismember(c,{'Romania', 'Serbia'})); 
+
+%e1 = find(pa.PC2(is1(e)) > 0.05); 
+
+%east_id = v54.InstanceID(is1(e(e1))); 
+
+%writematrix(east_id, 'east_HG.txt'); 
+
+  
+
+figure(1); 
+
+  
+
+hold on 
+
+plot(pa.PC1(is0),pa.PC2(is0),'go', 'MarkerSize',3); 
+
+h1 = plot(pa.PC1(is1),pa.PC2(is1),'ko','MarkerSize',3 );                          % plotting all  
+
+text(pa.PC1(is1),pa.PC2(is1),country(id), 'Color', [1 0 1], 'FontSize', 8); 
+
+  
+
+  
+
+h1.DataTipTemplate.DataTipRows(1) = dataTipTextRow('Group',v54.InstanceID(is1)); 
+
+h1.DataTipTemplate.DataTipRows(2) = dataTipTextRow('Group',v54.GroupID(is1)); 
+
+h1.DataTipTemplate.DataTipRows(3) = dataTipTextRow('Average date',v54.AverageDate(is1)); 
+
+h1.DataTipTemplate.Interpreter = 'none'; 
+
+  
+
+hold off 
+
+  
+
+figure(2); 
+
+hold on 
+
+plot(pa.PC2(is1),pa.PC3(is1),'go', 'MarkerSize',3); 
+
+%h2 = plot(pa.PC2(is1(e(e1))),pa.PC3(is1(e(e1))),'mo','MarkerSize',3); 
+
+%text(pa.PC2(is1(e(e1))),pa.PC3(is1(e(e1))),country(id(e(e1))), 'Color', [1 0 1], 'FontSize', 8); 
+
+  
+
+%h3 = plot(pa.PC2(is1(r(russia_n))),pa.PC3(is1(r(russia_n))),'co','MarkerSize',3);  
+
+%text(pa.PC2(is1(r(russia_n))),pa.PC3(is1(r(russia_n))),country(id(r(russia_n))), 'Color', [0 1 1], 'FontSize', 8); 
+
+  
+
+h4 = plot(pa.PC2(is1(w(w1))),pa.PC3(is1(w(w1))),'ko','MarkerSize',3); 
+
+text(pa.PC2(is1(w(w1))),pa.PC3(is1(w(w1))),country(id(w(w1))), 'Color', [0 0 0], 'FontSize', 8); 
+
+  
+
+h5 = plot(pa.PC2(is1(n(n1))),pa.PC3(is1(n(n1))),'yo','MarkerSize',3); 
+
+text(pa.PC2(is1(n(n1))),pa.PC3(is1(n(n1))),country(id(n(n1))), 'Color', [1 1 0], 'FontSize', 8); 
+
+  
+
+%h6 = plot(pa.PC2(is1(s)),pa.PC3(is1(s)),'ko','MarkerSize',3); 
+
+%text(pa.PC2(is1(s)),pa.PC3(is1(s)),country(id((s))), 'Color', [0.4940 0.1840 0.5560], 'FontSize', 8); 
+
+  
+
+h7 = plot(pa.PC2(is1(es(es1))),pa.PC3(is1(es(es1))),'bo','MarkerSize',3); 
+
+text(pa.PC2(is1(es(es1))),pa.PC3(is1(es(es1))),country(id(es(es1))), 'Color', [0 0 1], 'FontSize', 8); 
+
+  
+
+%h8 = plot(pa.PC2(is1(es(es2))),pa.PC3(is1(es(es2))),'ko','MarkerSize',3); 
+
+%text(pa.PC2(is1(es(es2))),pa.PC3(is1(es(es2))),country(id(es(es2))), 'Color', [0.4660 0.6740 0.1880], 'FontSize', 8); 
+
+  
+
+  
+
+  
+
+h2.DataTipTemplate.DataTipRows(1) = dataTipTextRow('Group',v54.InstanceID(is1)); 
+
+h2.DataTipTemplate.DataTipRows(2) = dataTipTextRow('Group',v54.GroupID(is1)); 
+
+h2.DataTipTemplate.DataTipRows(3) = dataTipTextRow('Average date',v54.AverageDate(is1)); 
+
+h2.DataTipTemplate.Interpreter = 'none'; 
+
+  
+
+hold off 
+
+  
+
+legend('all','east','russia','west', 'north', 'south', 'eastsouth1', 'eastsouth2'); 
+
+  
+
+----------------------------------------------------------------------------- 
+
+N CLUSTERING  
+
+  
+
+clearvars 
+
+a = readtable("arch.period.txt", 'TextType','string', 'Delimiter', '\t','ReadVariableNames' ,true, 'VariableNamingRule','preserve'); 
+
+v54 = readtable("v54.anno.dupl.txt", 'TextType','string', 'Delimiter', '\t','ReadVariableNames' ,true, 'VariableNamingRule','preserve'); 
+
+[~,memb] = ismember(a.InstanceID,v54.InstanceID); 
+
+v54 = v54(memb,:); 
+
+pa = readtable("v54.PCA.txt", 'TextType','string', 'Delimiter', '\t', ReadVariableNames=true); 
+
+  
+
+  
+
+is0 = find(~isnan(v54.Long) & v54.Long < 60); 
+
+is1 = find(a.N==1 & ~isnan(v54.Long) & v54.Long < 60); 
+
+  
+
+  
+
+unique(v54.Country(is1)); 
+
+[country, ~, id] = unique(v54.Country(is1)); 
+
+  
+
+c = v54.Country(is1); 
+
+  
+
+r = find(ismember(c,{'Latvia', 'Estonia', 'Lithuania', 'Norway', 'Lithuania', 'Ukraine', 'Russia', 'Denmark', 'Poland'})); 
+
+%north = find(pa.PC3(is1(r)) > 0); 
+
+north_id = v54.InstanceID(is1(r)); 
+
+writematrix(north_id, 'north_N.txt'); 
+
+  
+
+w  = find(ismember(c,{'United Kingdom', 'France', 'Channel Islands', 'Montenegro', 'Germany','Gernamy', 'Czech Republic', 'Austria', 'Sweden', 'Switzerland', 'Ireland', 'Portugal', 'Spain', 'Bulgaria', 'Italy', 'Gibraltar', 'Jordan', 'Turkey', 'Israel', 'Greece', 'Cyprus', 'Croatia', 'North Macedonia','Serbia', 'Hungary', 'Albania', 'Romania'})); 
+
+pa1 = find(pa.PC3(is1(w)) >= 0.01); 
+
+west_id_1 = v54.InstanceID(is1(w(pa1))); 
+
+writematrix(west_id_1, 'west_id1_N.txt'); 
+
+pa2 =  find(pa.PC3(is1(w)) < 0.01); 
+
+west_id_2 = v54.InstanceID(is1(w(pa2))); 
+
+writematrix(west_id_2, 'west_id2_N.txt'); 
+
+  
+
+e = find(ismember(c,{'Armenia', 'Azerbaijan', 'Iran', 'Iraq'})); 
+
+%e1 = find(pa.PC2(is1(e)) > -0.04); 
+
+east_id = v54.InstanceID(is1(e));     
+
+writematrix(east_id, 'east_south_N.txt'); 
+
+%e = find(ismember(c,{'Jordan', 'Turkey', 'Israel', 'Greece', 'Cyprus', 'Croatia', 'North Macedonia','Serbia', 'Hungary', 'Albania'})); 
+
+%east_id = v54.InstanceID(is1(e)); 
+
+%writematrix(east_id, 'east_south_N.txt'); 
+
+  
+
+figure(1); 
+
+  
+
+hold on 
+
+plot(pa.PC1(is0),pa.PC2(is0),'go', 'MarkerSize',3); 
+
+h1 = plot(pa.PC1(is1),pa.PC2(is1),'ko','MarkerSize',3 ); 
+
+text(pa.PC1(is1),pa.PC2(is1),country(id), 'Color', [1 0 1], 'FontSize', 8); 
+
+  
+
+  
+
+h1.DataTipTemplate.DataTipRows(1) = dataTipTextRow('Group',v54.InstanceID(is1)); 
+
+h1.DataTipTemplate.DataTipRows(2) = dataTipTextRow('Group',v54.GroupID(is1)); 
+
+h1.DataTipTemplate.DataTipRows(3) = dataTipTextRow('Average date',v54.AverageDate(is1)); 
+
+h1.DataTipTemplate.Interpreter = 'none'; 
+
+  
+
+hold off 
+
+  
+
+figure(2); 
+
+hold on 
+
+plot(pa.PC2(is1),pa.PC3(is1),'go', 'MarkerSize',3); 
+
+h2 = plot(pa.PC2(is1(w(pa1))),pa.PC3(is1(w(pa1))),'mo','MarkerSize',3); 
+
+text(pa.PC2(is1(w(pa1))),pa.PC3(is1(w(pa1))),country(id(w(pa1))), 'Color', [1 0 1], 'FontSize', 8); 
+
+  
+
+h3 = plot(pa.PC2(is1(r)),pa.PC3(is1(r)),'co','MarkerSize',3);  
+
+text(pa.PC2(is1(r)),pa.PC3(is1(r)),country(id(r)), 'Color', [0 1 1], 'FontSize', 8); 
+
+  
+
+h4 = plot(pa.PC2(is1(w(pa2))),pa.PC3(is1(w(pa2))),'ro','MarkerSize',3); 
+
+text(pa.PC2(is1(w(pa2))),pa.PC3(is1(w(pa2))),country(id(w(pa2))), 'Color', [1 0 0], 'FontSize', 8); 
+
+  
+
+h5 = plot(pa.PC2(is1(e)),pa.PC3(is1(e)),'yo','MarkerSize',3); 
+
+text(pa.PC2(is1(e)),pa.PC3(is1(e)),country(id(e)), 'Color', [1 1 0], 'FontSize', 8); 
+
+  
+
+h2.DataTipTemplate.DataTipRows(1) = dataTipTextRow('Group',v54.InstanceID(is1)); 
+
+h2.DataTipTemplate.DataTipRows(2) = dataTipTextRow('Group',v54.GroupID(is1)); 
+
+h2.DataTipTemplate.DataTipRows(3) = dataTipTextRow('Average date',v54.AverageDate(is1)); 
+
+h2.DataTipTemplate.Interpreter = 'none'; 
+
+  
+
+  
+
+hold off 
+
+legend('all', 'west1', 'north', 'west2', 'east'); 
+
+  
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------ 
+
+IA CLUSTERING  
+
+  
+
+clearvars 
+
+a = readtable("arch.period.txt", 'TextType','string', 'Delimiter', '\t','ReadVariableNames' ,true, 'VariableNamingRule','preserve'); 
+
+v54 = readtable("v54.anno.dupl.txt", 'TextType','string', 'Delimiter', '\t','ReadVariableNames' ,true, 'VariableNamingRule','preserve'); 
+
+[~,memb] = ismember(a.InstanceID,v54.InstanceID);    % check if all members the same  
+
+v54 = v54(memb,:);                                   % same order  
+
+pa = readtable("v54.PCA.txt", 'TextType','string', 'Delimiter', '\t', ReadVariableNames=true); 
+
+  
+
+is0 = find(~isnan(v54.Long) & v54.Long < 60); 
+
+is1 = find(a.IA==1 & ~isnan(v54.Long) & v54.Long < 60); 
+
+  
+
+unique(v54.Country(is1)); 
+
+[country, ~, id] = unique(v54.Country(is1)); 
+
+  
+
+c = v54.Country(is1); 
+
+  
+
+  
+
+e = find(ismember(c,{'Armenia','Iran', 'Turkey', 'Israel'})); 
+
+east_id = v54.InstanceID(is1(e)); 
+
+writematrix(east_id, 'east_IA.txt'); 
+
+  
+
+k = find(ismember(c,{'Kazakhstan'})); 
+
+k1 = find(pa.PC2(is1(k)) > 0.02); 
+
+k_id = v54.InstanceID(is1(k(k1)));               
+
+writematrix(k_id, 'kazak_IA.txt'); 
+
+  
+
+n = find(ismember(c,{'Ukraine', 'Russia', 'Montenegro', 'Sweden', 'Norway','United Kingdom', 'Netherlands', 'Estonia', 'Finland', 'Denmark', 'Germany', 'Czech Republic', 'Austria', 'Slovakia', 'Hungary', 'Slovenia', 'Croatia', 'North Macedonia', 'Albania', 'Moldova', 'Italy', 'Spain', 'Channel Islands'})); 
+
+%n1 = find(pa.PC2(is1(n))>= 0.0175); 
+
+n1 = find(pa.PC2(is1(n)) >= 0.001); 
+
+north_id = v54.InstanceID(is1(n(n1)));    
+
+writematrix(north_id, 'north_IA.txt'); 
+
+%n2 = find(pa.PC2(is1(n))< 0.0175); 
+
+%north2_id = v54.InstanceID(is1(n(n2))); 
+
+%writematrix(north2_id, 'north2_IA.txt'); 
+
+  
+
+ce = find(ismember(c,{'Ukraine', 'Russia', 'Montenegro', 'Sweden', 'Norway','United Kingdom', 'Netherlands', 'Estonia', 'Finland', 'Denmark', 'Germany','Czech Republic', 'Austria', 'Slovakia', 'Hungary', 'Slovenia', 'Croatia', 'North Macedonia', 'Albania', 'Moldova', 'Italy', 'Spain', 'Channel Islands'})); 
+
+%c1 = find(pa.PC2(is1(ce)) > 0.002); 
+
+c2 = find(pa.PC2(is1(ce)) < 0.001 & pa.PC2(is1(ce)) > -0.02); 
+
+%central1_id = v54.InstanceID(is1(ce(c1))); 
+
+central2_id = v54.InstanceID(is1(ce(c2))); 
+
+%writematrix(central1_id, 'central_1_IA.txt'); 
+
+writematrix(central2_id, 'central_2_IA.txt'); 
+
+  
+
+  
+
+  
+
+se = find(ismember(c,{'Bulgaria', 'Greece', 'Italy', 'North Macedonia', 'Slovakia'})); 
+
+se1 = find(pa.PC2(is1(se)) <= -0.02); 
+
+southeast_id = v54.InstanceID(is1(se(se1))); 
+
+writematrix(southeast_id, 'southeast_IA.txt') 
+
+  
+
+  
+
+figure(1); 
+
+  
+
+hold on 
+
+plot(pa.PC1(is0),pa.PC2(is0),'go', 'MarkerSize',3); 
+
+h1 = plot(pa.PC1(is1),pa.PC2(is1),'ko','MarkerSize',3 ); 
+
+text(pa.PC1(is1),pa.PC2(is1),country(id), 'Color', [1 0 1], 'FontSize', 8); 
+
+  
+
+  
+
+h1.DataTipTemplate.DataTipRows(1) = dataTipTextRow('Group',v54.InstanceID(is1)); 
+
+h1.DataTipTemplate.DataTipRows(2) = dataTipTextRow('Group',v54.GroupID(is1)); 
+
+h1.DataTipTemplate.DataTipRows(3) = dataTipTextRow('Average date',v54.AverageDate(is1)); 
+
+h1.DataTipTemplate.Interpreter = 'none'; 
+
+  
+
+hold off 
+
+  
+
+figure(2); 
+
+hold on 
+
+plot(pa.PC2(is1),pa.PC3(is1),'go', 'MarkerSize',3); 
+
+h2 = plot(pa.PC2(is1(n(n1))),pa.PC3(is1(n(n1))),'ko','MarkerSize',3); 
+
+text(pa.PC2(is1(n(n1))),pa.PC3(is1(n(n1))),country(id(n(n1))), 'Color', [1 0 1], 'FontSize', 8); 
+
+  
+
+h3 = plot(pa.PC2(is1(e)),pa.PC3(is1(e)),'yo','MarkerSize',3); 
+
+text(pa.PC2(is1(e)),pa.PC3(is1(e)),country(id(e)), 'Color', [1 1 0], 'FontSize', 8); 
+
+  
+
+h4 = plot(pa.PC2(is1(k(k1))),pa.PC3(is1(k(k1))),'ko','MarkerSize',3); 
+
+text(pa.PC2(is1(k(k1))),pa.PC3(is1(k(k1))),country(id(k(k1))), 'Color', [0 0 0], 'FontSize', 8); 
+
+  
+
+%h5 = plot(pa.PC2(is1(n(n2))),pa.PC3(is1(n(n2))),'ko','MarkerSize',3); 
+
+%text(pa.PC2(is1(n(n2))),pa.PC3(is1(n(n2))),country(id(n(n2))), 'Color', [0.4940 0.1840 0.5560], 'FontSize', 8); 
+
+  
+
+%h6 = plot(pa.PC2(is1(ce(c1))),pa.PC3(is1(ce(c1))),'co','MarkerSize',3);  
+
+%text(pa.PC2(is1(ce(c1))),pa.PC3(is1(ce(c1))),country(id(ce(c1))), 'Color', [0 1 1], 'FontSize', 8); 
+
+  
+
+h7 = plot(pa.PC2(is1(ce(c2))),pa.PC3(is1(ce(c2))),'ro','MarkerSize',3); 
+
+text(pa.PC2(is1(ce(c2))),pa.PC3(is1(ce(c2))),country(id(ce(c2))), 'Color', [1 0 0], 'FontSize', 8); 
+
+  
+
+  
+
+h9 = plot(pa.PC2(is1(se(se1))),pa.PC3(is1(se(se1))),'ko','MarkerSize',3); 
+
+text(pa.PC2(is1(se(se1))),pa.PC3(is1(se(se1))),country(id(se(se1))), 'Color', [0.4660 0.6740 0.1880], 'FontSize', 8); 
+
+  
+
+  
+
+h2.DataTipTemplate.DataTipRows(1) = dataTipTextRow('Group',v54.InstanceID(is1)); 
+
+h2.DataTipTemplate.DataTipRows(2) = dataTipTextRow('Group',v54.GroupID(is1)); 
+
+h2.DataTipTemplate.DataTipRows(3) = dataTipTextRow('Average date',v54.AverageDate(is1)); 
+
+h2.DataTipTemplate.Interpreter = 'none'; 
+
+  
+
+hold off 
+
+  
+
+legend('all', 'north1', 'east', 'kazakhstan', 'north2', 'central1', 'central2', 'south', 'southeast'); 
+
+  
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
+
+% BA CLUSTERING 
+
+  
+
+clearvars 
+
+a = readtable("arch.period.txt", 'TextType','string', 'Delimiter', '\t','ReadVariableNames' ,true, 'VariableNamingRule','preserve'); 
+
+v54 = readtable("v54.anno.dupl.txt", 'TextType','string', 'Delimiter', '\t','ReadVariableNames' ,true, 'VariableNamingRule','preserve'); 
+
+[~,memb] = ismember(a.InstanceID,v54.InstanceID); 
+
+v54 = v54(memb,:); 
+
+pa = readtable("v54.PCA.txt", 'TextType','string', 'Delimiter', '\t', ReadVariableNames=true); 
+
+  
+
+is0 = find(~isnan(v54.Long) & v54.Long < 60); 
+
+is1 = find(a.BA==1 & ~isnan(v54.Long) & v54.Long < 60); 
+
+  
+
+unique(v54.Country(is1)); 
+
+[country, ~, id] = unique(v54.Country(is1)); 
+
+  
+
+c = v54.Country(is1); 
+
+  
+
+  
+
+r = find(ismember(c,{'Russia', 'Ukraine', 'Moldova', 'Romania', 'Kazakhstan'})); 
+
+u = find(pa.PC2(is1(r))>= 0.05); 
+
+ru_id = v54.InstanceID(is1(r(u))); 
+
+writematrix(ru_id, 'east_north_BA.txt'); 
+
+  
+
+e = find(ismember(c,{'Turkey', 'Syria', 'Israel', 'Iran', 'Armenia', 'Kazakhstan', 'Turkmenistan', 'Russia'})); 
+
+e1 = find(pa.PC2(is1(e))> -0.02 & pa.PC2(is1(e)) < 0.05 & pa.PC3(is1(e)) <= -0.02); 
+
+east_id = v54.InstanceID(is1(e(e1))); 
+
+writematrix(east_id, 'east_BA.txt'); 
+
+  
+
+es = find(ismember(c,{'Turkey', 'Syria', 'Israel', 'Lebanon', 'Jordan', 'Iran'})); 
+
+es1 = find(pa.PC2(is1(es))<= -0.02); 
+
+es_id = v54.InstanceID(is1(es(es1))); 
+
+writematrix(es_id, 'east_south_BA.txt'); 
+
+  
+
+ce = find(ismember(c,{'Moldova', 'Romania', 'Kazakhstan','Czech Republic', 'United Kingdom', 'Kazakhstan','Netherlands', 'Poland', 'Latvia', 'Estonia', 'Lithuania', 'Denmark', 'Germany', 'Ireland', 'Isle of Man', 'Norway', 'Sweden', 'Russia', 'Ukraine', 'Spain','Bulgaria','Croatia', 'North Macedonia','Serbia', 'Hungary', 'Albania', 'Montenegro', 'Slovenia',  'Italy', 'Switzerland', 'France', 'Gibraltar', 'Greece', 'Portugal'})); 
+
+ce1 = find(pa.PC2(is1(ce)) > 0 & pa.PC2(is1(ce)) < 0.05 & pa.PC3(is1(ce)) > -0.02); 
+
+ce1_id = v54.InstanceID(is1(ce(ce1))); 
+
+writematrix(ce1_id, 'central_1_BA.txt'); 
+
+  
+
+  
+
+  
+
+s = find(ismember(c,{ 'Moldova', 'Romania', 'Kazakhstan','Russia','Ukraine','Spain','Bulgaria','Croatia', 'North Macedonia','Serbia', 'Hungary', 'Albania', 'Montenegro', 'Slovenia',  'Italy', 'Switzerland', 'France', 'Gibraltar', 'Greece', 'Portugal', 'Czech Republic', 'United Kingdom', 'Kazakhstan','Netherlands', 'Poland', 'Latvia', 'Estonia', 'Lithuania', 'Denmark', 'Germany', 'Ireland', 'Isle of Man', 'Norway', 'Sweden'})); 
+
+s1 = find(pa.PC2(is1(s)) <= 0 & pa.PC3(is1(s)) >= -0.03); 
+
+south1_id = v54.InstanceID(is1(s(s1))); 
+
+writematrix(south1_id, 'central_2_BA.txt'); 
+
+  
+
+  
+
+  
+
+figure(1); 
+
+  
+
+hold on 
+
+plot(pa.PC1(is0),pa.PC2(is0),'go', 'MarkerSize',3); 
+
+h1 = plot(pa.PC1(is1),pa.PC2(is1),'ko','MarkerSize',3 ); 
+
+text(pa.PC1(is1),pa.PC2(is1),country(id), 'Color', [1 0 1], 'FontSize', 8); 
+
+  
+
+  
+
+h1.DataTipTemplate.DataTipRows(1) = dataTipTextRow('Group',v54.InstanceID(is1)); 
+
+h1.DataTipTemplate.DataTipRows(2) = dataTipTextRow('Group',v54.GroupID(is1)); 
+
+h1.DataTipTemplate.DataTipRows(3) = dataTipTextRow('Average date',v54.AverageDate(is1)); 
+
+h1.DataTipTemplate.Interpreter = 'none'; 
+
+  
+
+hold off 
+
+  
+
+figure(2); 
+
+hold on 
+
+plot(pa.PC2(is1),pa.PC3(is1),'go', 'MarkerSize',3); 
+
+h2 = plot(pa.PC2(is1(r(u))),pa.PC3(is1(r(u))),'mo','MarkerSize',3); 
+
+text(pa.PC2(is1(r(u))),pa.PC3(is1(r(u))),country(id(r(u))), 'Color', [1 0 1], 'FontSize', 8); 
+
+  
+
+h3 = plot(pa.PC2(is1(ce(ce1))),pa.PC3(is1(ce(ce1))),'co','MarkerSize',3);  
+
+text(pa.PC2(is1(ce(ce1))),pa.PC3(is1(ce(ce1))),country(id(ce(ce1))), 'Color', [0 1 1], 'FontSize', 8); 
+
+  
+
+%h4 = plot(pa.PC2(is1(ce(ce2))),pa.PC3(is1(ce(ce2))),'ro','MarkerSize',3); 
+
+%text(pa.PC2(is1(ce(ce2))),pa.PC3(is1(ce(ce2))),country(id(ce(ce2))), 'Color', [1 0 0], 'FontSize', 8); 
+
+  
+
+%h5 = plot(pa.PC2(is1(ce(ce3))),pa.PC3(is1(ce(ce3))),'ko','MarkerSize',3); 
+
+%text(pa.PC2(is1(ce(ce3))),pa.PC3(is1(ce(ce3))),country(id(ce(ce3))), 'Color', [0.4660 0.6740 0.1880], 'FontSize', 8); 
+
+  
+
+h6 = plot(pa.PC2(is1(e(e1))),pa.PC3(is1(e(e1))),'yo','MarkerSize',3); 
+
+text(pa.PC2(is1(e(e1))),pa.PC3(is1(e(e1))),country(id(e(e1))), 'Color', [1 1 0], 'FontSize', 8); 
+
+  
+
+h7 = plot(pa.PC2(is1(es(es1))),pa.PC3(is1(es(es1))),'bo','MarkerSize',3); 
+
+text(pa.PC2(is1(es(es1))),pa.PC3(is1(es(es1))),country(id(es(es1))), 'Color', [0.4660 0.6740 0.1880], 'FontSize', 8); 
+
+  
+
+  
+
+h8 = plot(pa.PC2(is1(s(s1))),pa.PC3(is1(s(s1))),'ko','MarkerSize',3); 
+
+text(pa.PC2(is1(s(s1))),pa.PC3(is1(s(s1))),country(id(s(s1))), 'Color', [1 0 0], 'FontSize', 8); 
+
+  
+
+%h9 = plot(pa.PC2(is1(s(s2))),pa.PC3(is1(s(s2))),'ko','MarkerSize',3); 
+
+%text(pa.PC2(is1(s(s2))),pa.PC3(is1(s(s2))),country(id(s(s2))), 'Color', [0.4940 0.1840 0.5560], 'FontSize', 8); 
+
+  
+
+  
+
+  
+
+  
+
+  
+
+h2.DataTipTemplate.DataTipRows(1) = dataTipTextRow('Group',v54.InstanceID(is1)); 
+
+h2.DataTipTemplate.DataTipRows(2) = dataTipTextRow('Group',v54.GroupID(is1)); 
+
+h2.DataTipTemplate.DataTipRows(3) = dataTipTextRow('Average date',v54.AverageDate(is1)); 
+
+h2.DataTipTemplate.Interpreter = 'none'; 
+
+  
+
+hold off 
+
+  
+
+  
+
+legend('all','rus_ukr', 'central1', 'central2', 'baltics', 'east', 'eastsouth', 'south1', 'south2'); 
+
+  
+
+  
+
+------------------------------------------------------------------------------------------------------------------------ 
+
+% CHALCOLITIC CLUSTERNG 
+
+  
+
+clearvars 
+
+a = readtable("arch.period.txt", 'TextType','string', 'Delimiter', '\t','ReadVariableNames' ,true, 'VariableNamingRule','preserve'); 
+
+v54 = readtable("v54.anno.dupl.txt", 'TextType','string', 'Delimiter', '\t','ReadVariableNames' ,true, 'VariableNamingRule','preserve'); 
+
+[~,memb] = ismember(a.InstanceID,v54.InstanceID); 
+
+v54 = v54(memb,:); 
+
+pa = readtable("v54.PCA.txt", 'TextType','string', 'Delimiter', '\t', ReadVariableNames=true); 
+
+  
+
+is0 = find(~isnan(v54.Long) & v54.Long < 60); 
+
+is1 = find(a.C==1 & ~isnan(v54.Long) & v54.Long < 60); 
+
+  
+
+unique(v54.Country(is1)); 
+
+[country, ~, id] = unique(v54.Country(is1)); 
+
+  
+
+c = v54.Country(is1); 
+
+  
+
+uk = find(ismember(c,{'United Kingdom', 'Ukraine', 'Poland', 'Spain'})); 
+
+uk1 = find(pa.PC2(is1(uk)) >= 0); 
+
+uk_id = v54.InstanceID(is1(uk(uk1))); 
+
+writematrix(uk_id, 'uk_central_C.txt'); 
+
+  
+
+ce = find(ismember(c,{'Czech Republic','Poland', 'Spain', 'Portugal', 'Azerbaijan', 'Armenia', 'Iran', 'Russia', 'Turkmenistan', 'Ukraine'})); 
+
+ce1 = find(pa.PC2(is1(ce))< 0 & pa.PC3(is1(ce))> -0.02); 
+
+central_id = v54.InstanceID(is1(ce(ce1))); 
+
+writematrix(central_id, 'central_C.txt');       
+
+  
+
+s = find(ismember(c,{'Bulgaria', 'Serbia', 'Hungary', 'Albania','Romania', 'Cyprus', 'Croatia', 'Italy'})); 
+
+s1 = find(pa.PC2(is1(s))< -0.01); 
+
+south_id = v54.InstanceID(is1(s(s1))); 
+
+writematrix(south_id, 'south_C.txt'); 
+
+  
+
+e = find(ismember(c,{'Turkey', 'Israel', 'Azerbaijan', 'Armenia', 'Iran', 'Russia', 'Turkmenistan', 'Ukraine'})); 
+
+e1 = find(pa.PC2(is1(e))> -0.02 & pa.PC2(is1(e)) < 0.04 & pa.PC3(is1(e))< 0); 
+
+east1_id = v54.InstanceID(is1(e(e1))); 
+
+writematrix(east1_id, 'east_1_C.txt'); 
+
+e2 = find(pa.PC2(is1(e))<= -0.02 & pa.PC3(is1(e))< 0); 
+
+east2_id = v54.InstanceID(is1(e(e2))); 
+
+writematrix(east2_id, 'east_2_C.txt'); 
+
+  
+
+  
+
+  
+
+figure(1); 
+
+  
+
+hold on 
+
+plot(pa.PC1(is0),pa.PC2(is0),'go', 'MarkerSize',3); 
+
+h1 = plot(pa.PC1(is1),pa.PC2(is1),'ko','MarkerSize',3 ); 
+
+text(pa.PC1(is1),pa.PC2(is1),country(id), 'Color', [1 0 1], 'FontSize', 8); 
+
+  
+
+  
+
+h1.DataTipTemplate.DataTipRows(1) = dataTipTextRow('Group',v54.InstanceID(is1)); 
+
+h1.DataTipTemplate.DataTipRows(2) = dataTipTextRow('Group',v54.GroupID(is1)); 
+
+h1.DataTipTemplate.DataTipRows(3) = dataTipTextRow('Average date',v54.AverageDate(is1)); 
+
+h1.DataTipTemplate.Interpreter = 'none'; 
+
+  
+
+hold off 
+
+  
+
+figure(2); 
+
+hold on 
+
+plot(pa.PC2(is1),pa.PC3(is1),'go', 'MarkerSize',3); 
+
+  
+
+  
+
+h2 = plot(pa.PC2(is1(ce(ce1))),pa.PC3(is1(ce(ce1))),'co','MarkerSize',3);  
+
+text(pa.PC2(is1(ce(ce1))),pa.PC3(is1(ce(ce1))),country(id(ce(ce1))), 'Color', [0 1 1], 'FontSize', 8); 
+
+h3 = plot(pa.PC2(is1(e(e1))),pa.PC3(is1(e(e1))),'yo','MarkerSize',3); 
+
+text(pa.PC2(is1(e(e1))),pa.PC3(is1(e(e1))),country(id(e(e1))), 'Color', [1 1 0], 'FontSize', 8); 
+
+h4 = plot(pa.PC2(is1(e(e2))),pa.PC3(is1(e(e2))),'bo','MarkerSize',3); 
+
+text(pa.PC2(is1(e(e2))),pa.PC3(is1(e(e2))),country(id(e(e2))), 'Color', [0 0 1], 'FontSize', 8); 
+
+  
+
+  
+
+h5 = plot(pa.PC2(is1(s(s1))),pa.PC3(is1(s(s1))),'ko','MarkerSize',3); 
+
+text(pa.PC2(is1(s(s1))),pa.PC3(is1(s(s1))),country(id(s(s1))), 'Color', [0 0 0], 'FontSize', 8); 
+
+  
+
+h6 = plot(pa.PC2(is1(uk(uk1))),pa.PC3(is1(uk(uk1))),'ko','MarkerSize',3); 
+
+text(pa.PC2(is1(uk(uk1))),pa.PC3(is1(uk(uk1))),country(id((uk(uk1)))), 'Color', [0.4940 0.1840 0.5560], 'FontSize', 8); 
+
+  
+
+  
+
+  
+
+h2.DataTipTemplate.DataTipRows(1) = dataTipTextRow('Group',v54.InstanceID(is1)); 
+
+h2.DataTipTemplate.DataTipRows(2) = dataTipTextRow('Group',v54.GroupID(is1)); 
+
+h2.DataTipTemplate.DataTipRows(3) = dataTipTextRow('Average date',v54.AverageDate(is1)); 
+
+h2.DataTipTemplate.Interpreter = 'none'; 
+
+  
+
+hold off 
+
+legend('all', 'central', 'east1','east2', 'south', 'UK'); 
+
+% MERGING CLUSTERS  
+
+  
+
+clearvars 
+
+v54 = readtable("v54.anno.dupl.txt", 'TextType','string', 'Delimiter', '\t','ReadVariableNames' ,true, 'VariableNamingRule','preserve'); 
+
+a = readtable("arch.period.txt", 'TextType','string', 'Delimiter', '\t','ReadVariableNames' ,true, 'VariableNamingRule','preserve'); 
+
+[~,memb] = ismember(a.InstanceID,v54.InstanceID); 
+
+v54 = v54(memb,:); 
+
+  
+
+  
+
+clust_id = readtable('clust.id.txt','Delimiter','\t','TextType','string'); 
+
+clusters = []; 
+
+for k = 1:size(clust_id,1) 
+
+    b = readtable(clust_id.Name(k)+".txt",'TextType','string', 'Delimiter', '\t', 'ReadVariableNames',false);     %create - first row "Name", cluster IDs. 
+
+    [~,is ]= ismember(b.Var1,v54.InstanceID); 
+
+    clusters = [clusters; table(v54.PlinkFID(is), b.Var1, repmat(clust_id.Name(k),size(b,1),1))];    % as many rows (instance IDs, as many copies of cluster ID) 
+
+    
+
+end 
+
+writetable(clusters,"clusters.txt",'Delimiter','\t','WriteVariableNames',0); 
+
+------  CLEANING CLUSTERS clusters.txt file (NO DUPLICATES, TRIPLETS) 
+
+  
+
+  
+
+d = readtable("clusters.txt", 'Delimiter', '\t', 'Texttype', 'string','ReadVariableNames',0); 
+
+[id,~,ix] = unique(d.Var2);                         # NO DUPLICATES, TRIPLETS 
+
+>> ec = (1:size(id,2))'; nc = histc(ix,ec); 
+
+>> sum(nc==0) 
+
+ec = (1:size(id,1))'; nc = histc(ix,ec); 
+
+>> sum(nc==1) 
+
+d2 = d(nc(ix)==1,:); 
+
+>> whos d d2 
+
+  Name         Size             Bytes  Class    Attributes 
+
+  
+
+  d         3931x3             738957  table               
+
+  d2        3296x3             622663  table               
+
+>> writetable(d2,'clusters_clean.txt','Delimiter','\t','WriteVariableNames',0) 
+
+FILTERING V54 
+
+1) filtering v54 for max 40% missingness in clusters_clean.txt 
+
+  
+
+/cygdrive/c/Users/Kasutaja/Desktop/Kasutaja/Tools/plink/plink.exe  --bfile v54 --within clusters_clean.txt --geno 0.4 --make-bed --out v54.filtered 
+
+  
+
+2) getting v54.filtered frequencies  
+
+  
+
+/cygdrive/c/Users/Kasutaja/Desktop/Kasutaja/Tools/plink/plink.exe  --bfile v54.filtered --freq --within clusters_clean.txt --out v54.filtered 
+
+  
+
+3) tab separated txt file 
+
+  
+
+cat v54.filtered.frq.strat | sed -e 's/ [ ]*/ /g' -e 's/^[ ]//g' | tr ' ' '\t' > v54.filtered.frq.strat.tabs.txt 
+
+ 
+
+4) agree GWAS MATCHING POSITIONS  (apos with v54.filtered) -  
+
+  
+
+clearvars 
+
+gw = readtable("ieu-a-113.pos.txt", 'Delimiter','\t', 'TextType', 'string'); 
+
+apos = readtable('../v54/v54.filtered.bim', 'Filetype', 'text','Delimiter', '\t', 'ReadVariableNames',0,'TextType','string');     % filtered v54 positions for trait positions, max missingness allowed  
+
+apos.Properties.VariableNames = ["Chr", "ID", "gpos", "Pos", "A1", "A2"]; 
+
+  
+
+[~,is] = ismember([apos.Chr apos.Pos],[gw.Chr gw.Pos],'rows'); 
+
+is2 = find(is > 0); is = is(is2); 
+
+is3 = find((apos.A1(is2)==gw.Ref(is)&apos.A2(is2)==gw.Alt(is)) | (apos.A2(is2)==gw.Ref(is)&apos.A1(is2)==gw.Alt(is)) ); 
+
+figure(1); clf; iss = is(is3); plot(1:size(gw,1),gw.Lp,'k.',iss,gw.Lp(iss),'.r','MarkerSize',10); 
+
+  
+
+ix = 1:size(gw,1); 
+
+n = length(ix); 
+
+  
+
+ep = -log10(ix/(size(gw,1)+1)); 
+
+op= -sort(-gw.Lp); 
+
+lambda=op(round(0.9*n))/ep(round(0.9*n)); 
+
+  
+
+figure(2); plot(ep, op/lambda,'.',[0 6],[0 6],'r-'); 
+
+xlabel("-log10p expected"); 
+
+ylabel("-log10p observed"); 
+
+  
+
+gw = gw(is(is3),:); 
+
+gw.ID = apos.ID(is2(is3)); 
+
+writetable(gw, 'agree_gw.txt');    % positions specific to agreeableness traits that match 
+
+5) FINDING AGREE PEAKS - PEAK THRESHOLD CHOSEN 3,5 - 70 peaks  
+
+  
+
+clearvars 
+
+d = readtable('agree_gw.txt');                    % unfiltered gwas positions for agreeableness  
+
+%d = d(d.Lp >=3.8, :); 
+
+is_save = []; 
+
+for CHR=1:22 
+
+    is = find(d.Chr==CHR & d.Lp >=3.5); 
+
+    while size(is)>0 
+
+         [~,l]= max(d.Lp(is)); 
+
+         is_save(end+1)=is(l); 
+
+         is = is(abs(d.Pos(is)-d.Pos(is(l)))>500e3); 
+
+    end 
+
+end 
+
+d_peaks=d(is_save,:); 
+
+writetable(d_peaks,'peaks_agree.txt');                                            % the significant SNPS from GWAS  
+
+writetable(table(d_peaks.ID),'agree.snps.txt','WriteVariableNames',0); 
+
+  
+
+n = size(d,1);  
+
+  
+
+figure(1); clf; 
+
+scatter(1:n,d.Lp,12,mod(d.Chr,2));  
+
+hold on; plot(is_save,d.Lp(is_save),'r.','MarkerSize',10); hold off; 
+
+grid on 
+
+  
+
+  
+
+figure(2); clf; 
+
+CHR = 1; 
+
+is = find(d.Chr==CHR); is2 = is_save(d.Chr(is_save)==CHR);  
+
+plot(d.Pos(is)*1e-6,d.Lp(is),'o',d.Pos(is2)*1e-6,d.Lp(is2),'ro','MarkerSize',3) 
+
+grid on 
+
+6) v54 POSITONS SPECIFIC TO AGREEABLENESS PEAKS  
+
+  
+
+/cygdrive/c/Users/Kasutaja/Desktop/Kasutaja/Tools/plink/plink.exe  --bfile ../v54/v54.filtered --extract agree.snps.txt --freq --within ../v54/clusters_clean.txt --out v54.filtered.agree 
+
+  
+
+cat v54.filtered.agree.frq.strat | sed -e 's/ [ ]*/ /g' -e 's/^[ ]//g' | tr ' ' '\t' > v54.filtered.agree.frq.strat.tabs.txt 
+
+7) SNP - CLUSTER AGREE, PRS CALCULATION 
+
+  
+
+clearvars       
+
+%-------------------------------------------------------------------------- 
+
+% load data 
+
+%-------------------------------------------------------------------------- 
+
+  
+
+c = readtable("v54.filtered.agree.frq.strat.tabs.txt", 'Delimiter', '\t',"TextType",'string');    
+
+peaks = readtable('peaks_agree.txt', 'ReadVariableNames',true,"TextType",'string'); 
+
+nPop = 27;  
+
+  
+
+                  
+
+  
+
+pos = c(1:nPop:end,[2 4 5]);   
+
+pos.Properties.VariableNames = ["rsID", "A1", "A2"]; 
+
+  
+
+% c  
+
+maf = reshape(c.Var6,[nPop size(c,1)/nPop]);     
+
+N = reshape(c.Var8,[nPop size(c,1)/nPop])/2;         % divided by 2, to get individuals 
+
+  
+
+  
+
+% plot(sort(min(N,[],2))) 
+
+%b = find(all(mean(N==Nmin))); 
+
+  
+
+  
+
+  
+
+[ ~, ord]= ismember(peaks.ID, pos.rsID);    %first subset before N min filtering matching pos !! 
+
+pos = pos(ord(ord>0),:); 
+
+maf = maf(:,ord(ord>0)); 
+
+N = N(:,ord(ord>0)); 
+
+peaks = peaks(ord>0,:); 
+
+peaks= [peaks pos(:,["A1" "A2"])]; 
+
+  
+
+assert(all(peaks.ID == pos.rsID)); 
+
+assert(all((peaks.Ref == peaks.A1 & peaks.Alt == peaks.A2 ) | (peaks.Ref == peaks.A2 & peaks.Alt == peaks.A1)) )    % checking if all positons correct, no erorrs  
+
+  
+
+Nmin = 10; % minimum # inds with data across all populations.  
+
+a = find(all(N>=Nmin, 2));                  % size (columns, rows) 
+
+pos = pos(a,:);                             % rows - SNPs (positions), columns - populations 
+
+maf = maf(a,:); 
+
+N = N(a,:); 
+
+  
+
+% plot(sort(min(N,[],2))) 
+
+  
+
+is = find(peaks.Alt ~= peaks.A1); 
+
+f_alt = maf;  
+
+f_alt(:,is) = 1 - maf(:,is);  
+
+  
+
+  
+
+% calculate prs 
+
+  
+
+prs = 2 * (f_alt * peaks.Es); 
+
+ 
+
+%PLOT FOR GEOGRAPPHIC COORDINATES 
+
+ clearvars 
+
+  
+
+v54 = readtable("v54.anno.dupl.txt", 'TextType','string', 'Delimiter', '\t','ReadVariableNames' ,true, 'VariableNamingRule','preserve'); 
+
+  
+
+  
+
+clusters = readtable('clusters_clean_2.txt', 'TextType','string', 'Delimiter', '\t', 'ReadVariableNames',false); 
+
+clustersIDs = clusters.Var1; 
+
+v54IDs = v54.InstanceID; 
+
+  
+
+commonIDs = []; 
+
+for i = 1:length(clustersIDs) 
+
+    if ismember(clustersIDs(i), v54IDs) 
+
+        commonIDs = [commonIDs; clustersIDs(i)];  %take only IDs that are in the clusters 
+
+    end 
+
+end 
+
+%commonIDs = intersect(clustersIDs, v54IDs);    
+
+commonData = cell(length(commonIDs), 5); % will store instanceID,country, longitude, latitude, cluster 
+
+for i = 1:length(commonIDs) 
+
+    v54Index = find(v54IDs == commonIDs(i));   
+
+     
+
+    
+
+    clustersIndex = find(clustersIDs == commonIDs(i)); 
+
+     
+
+    
+
+    commonData{i, 1} = commonIDs(i); 
+
+    commonData{i, 2} = v54.Country(v54Index); 
+
+    commonData{i, 3} = v54.Long(v54Index); 
+
+    commonData{i, 4} = v54.Lat(v54Index); 
+
+    commonData{i, 5} = clusters.Var3(clustersIndex); 
+
+end 
+
+  
+
+commonDataTable = cell2table(commonData, 'VariableNames', {'InstanceID', 'Country', 'Long', 'Lat', 'Cluster'}); 
+
+  
+
+clusters_un = unique(commonDataTable.Cluster);  
+
+  
+
+  
+
+uniqueCountriesPerCluster = cell(length(clusters_un), 1); 
+
+  
+
+for i = 1:length(clusters_un) 
+
+    cluster_data = commonDataTable(commonDataTable.Cluster == clusters_un(i), :); %  
+
+    unique_countries = unique(cluster_data.Country); % only unique countries for the cluster 
+
+    unique_data = cell(length(unique_countries), 5);  
+
+    for j = 1:length(unique_countries)   %to get the info on all the countries present in the cluster 
+
+        country_data = cluster_data(strcmp(cluster_data.Country, unique_countries(j)), :);  
+
+        unique_data{j, 1} = country_data.InstanceID(1); % only 1  ID for each country stores 
+
+        unique_data{j, 2} = country_data.Country(1); % first instance of the country (Because I need only once the data) 
+
+        unique_data{j, 3} = country_data.Long(1); % same for the other columns (takes the first) 
+
+        unique_data{j, 4} = country_data.Lat(1);  
+
+        unique_data{j, 5} = country_data.Cluster(1);  
+
+    end 
+
+    uniqueCountriesPerCluster{i} = cell2table(unique_data, 'VariableNames', {'InstanceID', 'Country', 'Long', 'Lat', 'Cluster'});  
+
+end 
+
+  
+
+cluster_colors = lines(length(uniqueCountriesPerCluster)); 
+
+  
+
+  
+
+endings = {'_N', '_BA', '_IA', '_C', '_HG', '_Mod'}; 
+
+num_endings = length(endings); 
+
+  
+
+load wordcoastlines   % add the coastline variables  
+
+  
+
+figure(1); clf; hold on; 
+
+  
+
+  
+
+  
+
+lat_lim = [min(commonDataTable.Lat) max(commonDataTable.Lat)]; 
+
+long_lim = [min(commonDataTable.Long) max(commonDataTable.Long)]; 
+
+  
+
+for i = 1:num_endings 
+
+     
+
+    cluster_indices = contains(clusters_un, endings{i}); 
+
+    clusters_subset = uniqueCountriesPerCluster(cluster_indices); 
+
+     
+
+     
+
+    subplot(2, 3, i); 
+
+    hold on; 
+
+    for kk = 1:length(xs_land)  %plotting to coastline info 
+
+        patch(xs_land{kk},ys_land{kk},[1 1 0.9]);  
+
+    end 
+
+  
+
+    for kk = 1:length(xs_lake) 
+
+        patch(xs_lake{kk},ys_lake{kk},[0.9 0.9 1]); 
+
+    end 
+
+    
+
+     
+
+    legend_info = []; % to add in legend the cluster colour 
+
+    legend_labels = {};% to add in legend the cluster name 
+
+    
+
+     
+
+    for j = 1:length(clusters_subset) % looping through each cluster to plot the unique countries  
+
+         
+
+        cluster_data = clusters_subset{j}; 
+
+  
+
+         
+
+        scatter_info= scatter(cluster_data.Long, cluster_data.Lat, [], cluster_colors(j, :), 'filled', 'DisplayName', ['Cluster ', num2str(j)]); % show the cluster names  
+
+         
+
+        legend_info= [legend_info, scatter_info]; 
+
+        legend_labels = [legend_labels; cluster_data.Cluster]; % collect the cluster names that irratating through 
+
+         
+
+        
+
+       %show country names next to the datapoints  
+
+        for k = 1:height(cluster_data) 
+
+            text(cluster_data.Long(k), cluster_data.Lat(k), cluster_data.Country{k}, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Interpreter','none'); 
+
+        end 
+
+        cluster_legend_labels{j} = strcat(cluster_data.Cluster, endings{i}); 
+
+    end 
+
+  
+
+     
+
+    legend_labels = unique(legend_labels); 
+
+     
+
+    legend(legend_info, legend_labels, 'Location', 'best'); 
+
+    title(['Clusters of ', endings{i}]); % cluster of specific period 
+
+    xlabel('Longitude'); 
+
+    ylabel('Latitude'); 
+
+    xlim(long_lim); 
+
+    ylim(lat_lim); 
+
+     
+
+     
+
+     
+
+    
+
+    hold off; 
+
+end     
+
+ 
+
+ 
+
+% RESAMPLING THE DATA for agreeableness, BOOTSTRAPPING  
+
+  
+
+/cygdrive/c/Users/Kasutaja/Desktop/Kasutaja/Tools/plink/plink.exe --bfile v54.filtered --extract agree.snps.txt --recode12 --output-missing-genotype 0 --out agree_resampling 
+
+  
+
+%calculate seperate for populations 
+
+% load cluster file for calculating frequencies within clusters 
+
+%geno has genotype  
+
+%cut -f 7- -d ' ' agree_resampling.ped > agree_resampling.geno.txt  
+
+% ind has plink FIDs 
+
+% cut -f 2 -d ' ' agree_resampling.ped > agree_resampling.ind.txt 
+
+  
+
+clearvars 
+
+geno = load('agree_resampling.geno.txt'); 
+
+inds = string(textread('agree_resampling.ind.txt', '%s')); 
+
+geno = geno(:,1:2:end)+geno(:,2:2:end)-2; % NUMBER OF A2 ALLES, -2 is missing data.  
+
+% A2- major, A1 – minor 
+
+ 
+
+L = size(geno,2); 
+
+  
+
+clust = readtable('clusters_clean.txt', 'TextType', 'string', 'ReadVariableNames',0, 'Delimiter','\t'); 
+
+[clusters,~,clust_id] = unique(clust.Var3); 
+
+nClust = length(clusters); 
+
+  
+
+n_ind = zeros(nClust,1); 
+
+n_data = zeros(nClust,L); 
+
+f_A2 = zeros(nClust,L,1000);   
+
+  
+
+  
+
+  
+
+for i_clust = 1:nClust 
+
+    is = find(clust_id == i_clust);  
+
+    n_ind(i_clust) = length(is); 
+
+    [~,ix_org] = ismember(clust.Var2(is),inds); 
+
+    for i_boot = 1: 1000   % iterate 1000 times  
+
+        ix = ix_org(randi(length(ix_org),length(ix_org),1)); 
+
+        ix_org_all(i_clust, 1:length(ix), i_boot) = ix; % store indices for each looping round 
+
+        g = geno(ix,:); 
+
+        n_data(i_clust,:,i_boot) = sum(g>=0); 
+
+        for marker = 1: L 
+
+            f_A2(i_clust,marker,i_boot) = sum(max(0,g(:,marker))) ./ (2*n_data(i_clust,marker, i_boot));   %the bootstrapped frequencies of A2 
+
+            
+
+        end 
+
+    end 
+
+end 
+
+prs_boot = []; 
+
+it = size(f_A2,3); 
+
+for val = 1:it 
+
+    f_A1 = 1 - f_A2(:,:,val); %minor allele frequency  
+
+    c = readtable("v54.filtered.agree.frq.strat.tabs.txt", 'Delimiter', '\t',"TextType",'string');  
+
+    prs_a = readtable('prs_agreeableness.txt'); 
+
+    peaks = readtable('peaks_agree.txt', 'ReadVariableNames',true,"TextType",'string'); 
+
+    nPop = 27;  
+
+    pos = c(1:nPop:end,[2 4 5]);   
+
+    pos.Properties.VariableNames = ["rsID", "A1", "A2"];   
+
+    N = reshape(c.Var8,[nPop size(c,1)/nPop])/2;  
+
+  
+
+    [ ~, ord]= ismember(peaks.ID, pos.rsID); 
+
+    pos = pos(ord(ord>0),:); 
+
+    f_A1= f_A1(:,ord(ord>0)); 
+
+    N = N(:,ord(ord>0)); 
+
+    peaks = peaks(ord>0,:); 
+
+    peaks= [peaks pos(:,["A1" "A2"])]; 
+
+  
+
+    assert(all(peaks.ID == pos.rsID)); 
+
+    assert(all((peaks.Ref == peaks.A1 & peaks.Alt == peaks.A2 ) | (peaks.Ref == peaks.A2 & peaks.Alt == peaks.A1)) )    % checking if all positons correct, no erorrs  
+
+  
+
+    Nmin = 10; % minimum # inds with data across all populations.  
+
+    a = find(all(N>=Nmin, 2));                  % size (columns, rows) 
+
+    pos = pos(a,:);                             % rows - SNPs (positions), columns - populations 
+
+    f_A1 = f_A1(a,:);    % 21/27 population remaining  
+
+    N = N(a,:); 
+
+  
+
+% plot(sort(min(N,[],2))) 
+
+  
+
+    is = find(peaks.Alt ~= peaks.A1); 
+
+    f_alt = f_A1;  
+
+    f_alt(:,is) = 1 - f_A1(:,is);  
+
+  
+
+    prs = 2 * (f_alt * peaks.Es);  %BOOTSTRAPPED PRS, update for each iteration 
+
+    prs_boot = [prs_boot,prs]; 
+
+end 
+
+  
+
+% Calculate mean PRS score across all iterations for each cluster 
+
+mean_prs = mean(prs_boot, 2); 
+
+  
+
+% years BC  
+
+  
+
+% bronze age - 3300 1200 
+
+% neolithic 12 000 3000 
+
+% iron age 1200 550 
+
+% chalcolithic - 3500 2300 
+
+% hunter gatherer - 26 000 12000 
+
+  
+
+%  modern - 0 1945  
+
+  
+
+percentile30 = zeros(size(mean_prs)); 
+
+percentile70 = zeros(size(mean_prs)); 
+
+  
+
+for i = 1:numel(mean_prs)          % the y values for the patches  
+
+    percentile30(i) = prctile(mean_prs(1:i), 30); 
+
+    percentile70(i) = prctile(mean_prs(1:i), 70); 
+
+end 
+
+% x values for the time axis  
+
+xs = {[-3300 -1200 -1200 -3300],[-1200 -550 -550 -1200] , [-12000 -3000 -3000 -12000], [-3300 -1200 -1200 -3300], [-1200 -500 -500 -1200], [-12000 -3000 -3000 -12000], [-3500 -2300 -2300 -3500], [-26000 -12000 -12000 -26000], [0 1945 1945 0], [-3300 -1200 -1200 -3300], [-1200 -550 -550 -1200], [0 1945 1945 0], [-3300 -1200 -1200 -3300], [-3300 -1200 -1200 -3300], [0 1945 1945 0], [-26000 -12000 -12000 -26000], [-12000 -3000 -3000 -12000], [0 1945 1945 0], [-3500 -2300 -2300 -3500], [-1200 -550 -550 -1200], [0 1945 1945 0]}; 
+
+  
+
+populations = readtable('agree__final_pop.txt', 'Delimiter', '\t','ReadVariableNames',false); 
+
+pop_names = populations.Var1; 
+
+east_populations = startsWith(pop_names, 'east'); 
+
+south_populations = startsWith(pop_names, 'south') | contains(pop_names, 'south') | contains(pop_names, 'italy'); 
+
+west_populations = contains(pop_names, 'central'); 
+
+north_populations = startsWith(pop_names, 'north') | contains(pop_names, 'north'); 
+
+  
+
+east_pop = pop_names(east_populations); 
+
+south_pop = pop_names(south_populations); 
+
+west_pop = pop_names(west_populations); 
+
+north_pop = pop_names(north_populations); 
+
+  
+
+  
+
+  
+
+ys = []; 
+
+%for i = percentile20 & percentile80 
+
+    %ys = [percentile20(i) percentile20(i) percentile80(i) percentile80(i)]; 
+
+  
+
+%end 
+
+for i = 1:numel(mean_prs) 
+
+    ys = [ys; percentile30(i) percentile30(i) percentile70(i) percentile70(i)]; 
+
+end 
+
+  
+
+colours = hsv(length(xs)); 
+
+xs_groups = {xs(east_populations), xs(south_populations), xs(west_populations), xs(north_populations)}; 
+
+ys_groups = {ys(east_populations,:), ys(south_populations,:), ys(west_populations,:), ys(north_populations,:)}; 
+
+pop_names_groups = {pop_names(east_populations), pop_names(south_populations), pop_names(west_populations), pop_names(north_populations)}; 
+
+  
+
+all_ys = cell2mat(ys_groups(:)); 
+
+min_y = min(all_ys(:)); 
+
+max_y = max(all_ys(:)); 
+
+  
+
+subplots = {'East Populations', 'South Populations', 'West Populations', 'North Populations'}; 
+
+  
+
+  
+
+  
+
+figure; 
+
+  
+
+% loop through north,south,east and west 
+
+for i = 1:4 
+
+    subplot(2, 2, i); 
+
+    hold on; 
+
+    
+
+    xs_region = xs_groups{i};  % info extract from the current region 
+
+    ys_region = ys_groups{i}; 
+
+    pop_names_region = pop_names_groups{i};   % the populations for that region 
+
+    for k = 1: numel(xs_region)    % section for plotting the lines in patches with mean prs value 
+
+        x_patch = xs_region{k}; 
+
+        mean_value = mean_prs(k);  % the mean prs of corresponding pop 
+
+        y_value = mean(ys_region(k,:)); 
+
+         
+
+        patch_colour = colours(k,:); 
+
+        line_patch_colour = 0.8 * patch_colour; % a darker shade colour for the corresponding mean PRS line  
+
+        plot([min(x_patch), max(x_patch)],[y_value, y_value]  , '-', 'Color', line_patch_colour,'LineWidth',1); 
+
+         
+
+    end 
+
+     
+
+    for k = 1:numel(xs_region)   % section for plotting the patches and the pop names  
+
+        x_patch = xs_region{k}; 
+
+        y_patch = ys_region(k, :); 
+
+        patch(x_patch, y_patch, colours(k,:), 'FaceAlpha', 0.1);% facealpha to add transparency, since the patches overlap 
+
+        text_x = mean(x_patch); 
+
+        text(text_x, y_patch(1), pop_names_region{k}, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Color', 'b'); 
+
+    end 
+
+     
+
+         
+
+     
+
+    hold off; 
+
+     
+
+    min_x = min(cellfun(@(x) min(x), xs_region));   % setting axis limits, get min x value from all patches of the region 
+
+    max_x = max(cellfun(@(x) max(x), xs_region));n 
+
+    xlim([min_x max_x]); 
+
+     
+
+     
+
+    ylim([min_y max_y]); 
+
+     
+
+    % Label axes and title 
+
+    xlabel('Time (years BCE)'); 
+
+    ylabel('PRS'); 
+
+    title(sprintf('Polygons of agreeableness trait with 30th and 70th Percentile Boundaries\nand the mean PRS for %s', subplots{i})); 
+
+end 
+
+6) PCA FOR BEHAVIOURAL TRAITS  
+
+  
+
+clearvars 
+
+  
+
+aa = readtable("PRS_final.txt", 'TextType','string', 'Delimiter','\t'); 
+
+pop = aa.Population; 
+
+traits = string(aa.Properties.VariableNames(3:8)); 
+
+T = normalize(table2array(aa(:, 3:8)), 'scale');  % normalizing the prs values  
+
+[princ, pc] = pca(T); 
+
+  
+
+  
+
+figure; 
+
+plot(princ(:,1), princ(:,2), 'o');    % principal components 1 vs two for all traits  
+
+for i = 1: length(traits) 
+
+    text(princ(i,1), princ(i,2), traits(i),'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom' ); 
+
+end 
+
+xlabel('Principal Component 1'); 
+
+ylabel('Principal Component 2'); 
+
+title('PCA of Traits'); 
+
+ 
+
+ 
+
+% DENDROGRAM AND THREE PC COMPARISONS OF THE CLUSTERS 
+
+clearvars 
+
+  
+
+aa = readtable("PRS_final.txt", 'TextType','string', 'Delimiter','\t'); 
+
+pop = aa.Population; 
+
+traits = string(aa.Properties.VariableNames(3:8)); 
+
+T = normalize(table2array(aa(:, 3:8)), 'scale'); 
+
+[princ, pc] = pca(T); 
+
+  
+
+  
+
+figure(1); 
+
+  
+
+z = linkage(T, 'ward'); 
+
+cutoff = median([z(end-2, 3), z(end-1, 3)]); % cutoff for the branches to group  
+
+dendrogram(z, 'ColorThreshold', 0.8*cutoff, 'Labels', pop); % 0.8* to lower the cutoff a bit, so 5 groups 
+
+title('Dendrogram of Clusters'); 
+
+  
+
+  
+
+colour_assigning = cluster(z, 'cutoff',0.8*cutoff, 'criterion','distance');   % GET INFO FOR WHAT CLUSTERS GROUPED IN BRANCHES BASED ON COLOURS 
+
+unique_colours = unique(colour_assigning); % 5 colours 
+
+nr_values = numel(unique_colours);  
+
+colormap = zeros(nr_values, 3);    %create a map for the colours that were used in the tree 
+
+  
+
+for i = 1:nr_values 
+
+    switch i 
+
+        case 1 
+
+            colormap(i, :) = [0, 1, 0]; % green 
+
+        case 2 
+
+            colormap(i, :) = [0, 0, 0]; % black 
+
+        case 3 
+
+            colormap(i, :) = [0, 1, 1]; % light blue/cyan 
+
+        case 4 
+
+            colormap(i, :) = [1, 0, 0]; % red 
+
+        case 5 
+
+            colormap(i, :) = [0.75, 0, 0.75]; % purple (closest to the one in tree) 
+
+        otherwise 
+
+             
+
+            colormap(i, :) = [0, 0, 0]; % default to black (just in case) 
+
+    end 
+
+end 
+
+  
+
+endings = {'_N', '_BA', '_IA', '_C', '_HG', '_Mod'}; 
+
+full_names = {'Neolithic', 'Bronze Age', 'Iron Age', 'Chalcolithic', 'Hunter Gathers', 'Modern Age'}; 
+
+  
+
+  
+
+  
+
+shapes = {'o', 's', '^', 'd', 'v', 'pentagram'}; % in PCA cluster of one period with one shape 
+
+figure(2); 
+
+hold on; 
+
+  
+
+for i = 1:length(endings) 
+
+     
+
+    cluster_indices = contains(pop, endings{i}); % the clusters with corresponding endings 
+
+    cluster_pc = pc(cluster_indices, :);    % the pc data for the cluster rows 
+
+    cluster_pop = pop(cluster_indices);    % the full names of the popualtions  
+
+    clust_colour_assigning = colour_assigning(cluster_indices);   %get the value for the colour group of the cluster 
+
+    clust_colour = colormap(clust_colour_assigning, :);   % get the colour 
+
+  
+
+    
+
+    shape_i = mod(i-1, length(shapes))+1;   % to choose shapes cycling through all of them in each iteration 
+
+    scatter(cluster_pc(:,1), cluster_pc(:,2), 100, clust_colour, shapes{shape_i}, "filled");  
+
+    for k = 1:size(cluster_pc, 1) 
+
+        text(cluster_pc(k,1), cluster_pc(k,2), cluster_pop{k}, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Interpreter','none'); 
+
+    end 
+
+end 
+
+xlabel('PRS Principal Component 1'); 
+
+ylabel('PRS Principal Component 2'); 
+
+title('PCA of Clusters'); 
+
+  
+
+  
+
+% CREATING A SEPARATE FIGURE FOR THE LEGEND  
+
+legend_fig = figure(3); 
+
+hold on; 
+
+  
+
+% ploting all the shapes, but in black 
+
+for i = 1:length(shapes) 
+
+    scatter(1, i, 100, 'k', shapes{i}, 'filled', 'MarkerEdgeColor', 'k'); 
+
+end 
+
+  
+
+% adjust the distance between symbols and the period name 
+
+text(1.3*ones(1,length(shapes)), 1:length(shapes), full_names, 'VerticalAlignment', 'middle', 'FontSize', 10); 
+
+  
+
+  
+
+axis([0.5, 2.1, 0.5, length(shapes) + 0.5]);  
+
+  
+
+%legend_box = rectangle('Position', [0.7, 0.5, 1.7, length(shapes)], 
+
+%'EdgeColor', 'k', 'LineWidth', 1); % idk, but doesn't work 
+
+  
+
+% plot separately the lines around the legend 
+
+line([0.7, 0.7], [0.5, length(shapes) + 0.5], 'Color', 'k', 'LineWidth', 1); % left vertical line 
+
+line([2.1, 2.1], [0.5, length(shapes) + 0.5], 'Color', 'k', 'LineWidth', 1); % right vertical line 
+
+line([0.7, 2.1], [0.5, 0.5], 'Color', 'k', 'LineWidth', 1); % bottom horizontal line 
+
+line([0.7, 2.1], [length(shapes) + 0.5, length(shapes) + 0.5], 'Color', 'k', 'LineWidth', 1); % top horizontal line 
+
+axis off; 
+
+hold off; 
+
+  
+
+  
+
+% repeat the steps for different pcs 
+
+% plot: PC1 vs PC3 
+
+figure(4); 
+
+hold on; 
+
+for i = 1:length(endings) 
+
+     
+
+    cluster_indices = contains(pop, endings{i}); 
+
+    cluster_pc = pc(cluster_indices, :); 
+
+    cluster_pop = pop(cluster_indices); 
+
+    clust_colour_assigning = colour_assigning(cluster_indices); 
+
+    clust_colour = colormap(clust_colour_assigning, :); 
+
+  
+
+     
+
+    shape_i = mod(i-1, length(shapes))+1; 
+
+    scatter(cluster_pc(:,1), cluster_pc(:,3), 100, clust_colour, shapes{shape_i}, "filled"); 
+
+    for k = 1:size(cluster_pc, 1) 
+
+        text(cluster_pc(k,1), cluster_pc(k,3), cluster_pop{k}, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Interpreter','none'); 
+
+    end 
+
+end 
+
+xlabel('PRS Principal Component 1'); 
+
+ylabel('PRS Principal Component 3'); 
+
+title('PCA of Clusters'); 
+
+hold off; 
+
+  
+
+%  PC2 vs PC3 
+
+figure(5); 
+
+hold on; 
+
+for i = 1:length(endings) 
+
+    cluster_indices = contains(pop, endings{i}); 
+
+    cluster_pc = pc(cluster_indices, :); 
+
+    cluster_pop = pop(cluster_indices); 
+
+    clust_colour_assigning = colour_assigning(cluster_indices); 
+
+    clust_colour = colormap(clust_colour_assigning, :); 
+
+  
+
+     
+
+    shape_i = mod(i-1, length(shapes))+1; 
+
+    scatter(cluster_pc(:,2), cluster_pc(:,3), 100, clust_colour, shapes{shape_i}, "filled"); 
+
+    for k = 1:size(cluster_pc, 1) 
+
+        text(cluster_pc(k,2), cluster_pc(k,3), cluster_pop{k}, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'Interpreter','none'); 
+
+    end 
+
+end 
+
+xlabel('PRS Principal Component 2'); 
+
+ylabel('PRS Principal Component 3'); 
+
+title('PCA of Clusters'); 
+
+hold off; 
+
+ 
+
+% CREATING THE HEATMAP  
+
+clearvars 
+
+  
+
+aa = readtable("PRS_final.txt", 'TextType','string', 'Delimiter','\t'); 
+
+pop = aa.Population; 
+
+traits = string(aa.Properties.VariableNames(3:8)); 
+
+T = normalize(table2array(aa(:, 3:8)), 'scale'); 
+
+T = T - mean(T,1); 
+
+  
+
+traits(5)= 'Openness to experience'; 
+
+traits(6) = 'Risk-taking'; 
+
+  
+
+  
+
+imagesc(T); % to create image plot 2D 
+
+colormap("turbo"); % 4 colour scale 
+
+colorbar;    
+
+  
+
+  
+
+xlim([0.5, length(traits) + 0.5]); 
+
+ylim([0.5, length(pop) + 0.5]); 
+
+  
+
+title('Heatmap of behavioural traits across different populations'); 
+
+xticks(1:length(traits));  % all the traits displayed 
+
+xticklabels(traits); 
+
+yticks(1:length(pop)); %all the populations displayed 
+
+yticklabels(pop);
